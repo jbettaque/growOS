@@ -1,11 +1,14 @@
 from pygments.lexer import default
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, Float, String, Date, Text
+from sqlalchemy import Column, Integer, Float, String, Date, Text, ForeignKey
+from sqlalchemy.orm import relationship
 from streamlit_sqlalchemy import StreamlitAlchemyMixin
 import streamlit as st
 import pandas as pd
 
-Base = declarative_base()
+from db.database import Base
+from model.hydro_run import HydroRun
+
 
 class HydroDataEntry(Base, StreamlitAlchemyMixin):
     __tablename__ = "hydro_data_entry"
@@ -27,15 +30,15 @@ class HydroDataEntry(Base, StreamlitAlchemyMixin):
     other_actions = Column(Text)
     observations = Column(Text)
     comments = Column(Text)
-
-    # Water measurements
     water_temp = Column(Float, default=0)  # in Celsius
     water_added = Column(Float, default=0)  # in Liters
     water_level = Column(Float, default=0)  # in cm from top
-
-    # Environment measurements
     humidity = Column(Float, default=0)  # in percentage
     air_temp = Column(Float, default=0)  # in Celsius
+
+    run_id = Column(Integer, ForeignKey('hydro_run.id'), nullable=False)
+
+    run = relationship("HydroRun", back_populates="entries")
 
     def __repr__(self):
         return f"<HydroDataEntry(date={self.date}, ph_initial={self.ph_initial}, ec_initial={self.ec_initial})>"
@@ -43,6 +46,7 @@ class HydroDataEntry(Base, StreamlitAlchemyMixin):
     def __df__(self):
         result_df = pd.DataFrame([{
             'date': self.date,
+            'run_id': self.run_id,
             'ph_initial': self.ph_initial,
             'ec_initial': self.ec_initial,
             'ph_final': self.ph_final,
@@ -62,16 +66,10 @@ class HydroDataEntry(Base, StreamlitAlchemyMixin):
 
         return result_df
 
-
-# Initialize the connection (assuming you have set up your connection in secrets.toml)
-conn = st.connection("hydro_db", type="sql")
-StreamlitAlchemyMixin.st_initialize(connection=conn)
-Base.metadata.create_all(conn.engine)
-
-
 def get_all_entries_df(entries):
     return pd.DataFrame([{
         'date': entry.date,
+        'run_id': entry.run_id,
         'ph_initial': entry.ph_initial,
         'ec_initial': entry.ec_initial,
         'ph_final': entry.ph_final,

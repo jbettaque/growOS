@@ -1,22 +1,25 @@
 from datetime import date
 import streamlit as st
 import pandas as pd
-from model.hydro_data_entry import HydroDataEntry, conn
-st.set_page_config(layout="centered")
 
-def get_last_entry():
-    with conn.session as session:
-        last_entry = session.query(HydroDataEntry).order_by(HydroDataEntry.date.desc(), HydroDataEntry.id.desc()).first()
-        return last_entry
+from components.run_selector import run_selector
+from db.database_handler import get_last_entry
+from model.hydro_data_entry import HydroDataEntry
+from model.hydro_run import HydroRun
+from db.database import conn, init_db
+init_db()
+
+st.set_page_config(layout="centered")
 
 def submit_data(data):
     today = date.today()
 
     try:
-        if len(data) == 7:  # measure_only_mode
+        if len(data) == 11:  # measure_only_mode
             # Create new measurement instance
             measurement = HydroDataEntry(
                 date=today,
+                run_id=selected_run.id,
                 ph_initial=float(data[0]),
                 ec_initial=float(data[1]),
                 ph_final=float(data[0]),  # Same as initial in measure only mode
@@ -32,15 +35,16 @@ def submit_data(data):
                 hydro_vega_added=0,
                 hydro_flora_added=0,
                 boost_added=0,
-                water_temp=0,
-                water_added=0,
-                water_level=0,
-                humidity=0,
-                air_temp=0,
+                # water_temp=float(data[7]),
+                # water_level=float(data[8]),
+                # water_added=0,
+                # air_temp=float(data[9]),
+                # humidity=float(data[10]),
             )
         else:  # full mode
             measurement = HydroDataEntry(
                 date=today,
+                run_id=selected_run.id,
                 ph_initial=float(data[0]),
                 ec_initial=float(data[1]),
                 ph_final=float(data[2]),
@@ -54,7 +58,14 @@ def submit_data(data):
                 light_intensity=int(data[10]),
                 other_actions=str(data[11]),
                 observations=str(data[12]),
-                comments=str(data[13])
+                comments=str(data[13]),
+                water_temp=float(data[14]),
+                water_level=float(data[15]),
+                water_added=float(data[16]),
+                air_temp=float(data[17]),
+                humidity=float(data[18]),
+
+
             )
 
         # Save to database
@@ -72,6 +83,7 @@ def submit_data(data):
         return None
 
 measure_only_mode = st.toggle("Measure only mode", value=True)
+selected_run = run_selector()
 
 with st.form(key='dataEntryForm'):
     if measure_only_mode:
@@ -111,6 +123,18 @@ with st.form(key='dataEntryForm'):
             boost_added = st.number_input("boost added (ml)", value=0)
 
     st.divider()
+    st.write("Water")
+    water_temp = st.number_input("water temp (degC)", value=0)
+    water_level = st.number_input("water level (litres)", value=0)
+    if not measure_only_mode:
+        water_added = st.number_input("water added (litres)", value=0)
+
+    st.divider()
+    st.write("Environment")
+    air_temp = st.number_input("air temp (degC)", value=0)
+    air_humidity = st.number_input("air humidity (%)", value=0)
+
+    st.divider()
     st.write("Light")
 
     last_entry = get_last_entry()
@@ -131,6 +155,6 @@ with st.form(key='dataEntryForm'):
     if submitted:
 
         if measure_only_mode:
-            submit_data([ph, ec, light_hours, light_intensity, other_actions, observations, comments])
+            submit_data([ph, ec, light_hours, light_intensity, other_actions, observations, comments, water_temp, water_level, air_temp, air_humidity])
         else:
-            submit_data([ph, ec, ph_final, ec_final, ph_down_added, ph_up_added, hydro_vega_added, hydro_flora_added, boost_added, light_hours, light_intensity, other_actions, observations, comments])
+            submit_data([ph, ec, ph_final, ec_final, ph_down_added, ph_up_added, hydro_vega_added, hydro_flora_added, boost_added, light_hours, light_intensity, other_actions, observations, comments, water_temp, water_level, water_added, air_temp, air_humidity])

@@ -1,11 +1,19 @@
 import streamlit as st
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from streamlit_local_storage import LocalStorage
+
+from components.run_selector import run_selector
+from db.database_handler import get_all_entries
+from model.hydro_run import HydroRun
+from pages.dataEntry import selected_run
+
 st.set_page_config(layout="wide")
 
 import pandas as pd
 from datetime import datetime
 import plotly.express as px
+
 
 
 def plot_ph_chart(df):
@@ -364,13 +372,11 @@ def display_charts(df):
 
 if __name__ == "__main__":
     # Assuming you have your data loading logic here
-    from model.hydro_data_entry import get_all_entries_df, conn, HydroDataEntry
+    from model.hydro_data_entry import get_all_entries_df, HydroDataEntry
+    from db.database import init_db
 
-
-    def get_all_entries():
-        with conn.session as session:
-            return session.query(HydroDataEntry).order_by(HydroDataEntry.date.asc()).all()
-
+    init_db()
+    selected_run = run_selector()
 
     all_entries = get_all_entries_df(get_all_entries())
     display_charts(all_entries)
