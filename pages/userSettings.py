@@ -1,6 +1,6 @@
 import streamlit as st
 from streamlit_local_storage import LocalStorage
-
+st.set_page_config(layout="wide")
 st.title("Settings")
 settings_form = st.form(key="settings_form")
 
@@ -16,4 +16,7 @@ with settings_form:
 summary_container = st.container(border=True)
 with summary_container:
     st.subheader("Current Settings Summary")
-    st.write("Username: " + local_storage.getItem("username"))
+    if local_storage.getItem("username") is None:
+        st.write("Username not set")
+    else:
+        st.write("Username: " + local_storage.getItem("username"))

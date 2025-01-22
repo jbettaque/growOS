@@ -9,7 +9,8 @@ def run_selector():
     runs = get_all_runs()
     if local_storage.getItem("selected_run_id") is None:
         selected_run = st.selectbox("Select run", runs)
-        local_storage.setItem("selected_run_id", selected_run.id)
+        if selected_run is not None:
+            local_storage.setItem("selected_run_id", selected_run.id)
     else:
         selected_run_id = local_storage.getItem("selected_run_id")
         selected_run = None
@@ -23,5 +24,5 @@ def run_selector():
             selected_run = st.selectbox("Select run", runs)
 
 
-        local_storage.setItem("selected_run_id", selected_run.id)
+        # local_storage.setItem("selected_run_id", selected_run.id)
     return selected_run
