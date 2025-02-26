@@ -23,6 +23,7 @@ def run_selector():
         else:
             selected_run = st.selectbox("Select run", runs)
 
+        local_storage.setItem("selected_run_id", selected_run.id)
 
-        # local_storage.setItem("selected_run_id", selected_run.id)
     return selected_run
+

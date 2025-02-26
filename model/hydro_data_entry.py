@@ -45,6 +45,7 @@ class HydroDataEntry(Base, StreamlitAlchemyMixin):
 
     def __df__(self):
         result_df = pd.DataFrame([{
+            'id': self.id,
             'date': self.date,
             'run_id': self.run_id,
             'ph_initial': self.ph_initial,
@@ -68,6 +69,7 @@ class HydroDataEntry(Base, StreamlitAlchemyMixin):
 
 def get_all_entries_df(entries):
     return pd.DataFrame([{
+        'id': entry.id,
         'date': entry.date,
         'run_id': entry.run_id,
         'ph_initial': entry.ph_initial,
@@ -91,3 +93,30 @@ def get_all_entries_df(entries):
         'humidity': entry.humidity,
         'air_temp': entry.air_temp
     } for entry in entries])
+
+def get_entry_from_df(df):
+    return HydroDataEntry(
+        id=df['id'],
+        date=df['date'],
+        run_id=df['run_id'],
+        ph_initial=df['ph_initial'],
+        ec_initial=df['ec_initial'],
+        ph_final=df['ph_final'],
+        ec_final=df['ec_final'],
+        ph_down_added=df['ph_down_added'],
+        ph_up_added=df['ph_up_added'],
+        hydro_vega_added=df['hydro_vega_added'],
+        hydro_flora_added=df['hydro_flora_added'],
+        boost_added=df['boost_added'],
+        rhizotonic_added=df['rhizotonic_added'],
+        light_hours=df['light_hours'],
+        light_intensity=df['light_intensity'],
+        other_actions=df['other_actions'],
+        observations=df['observations'],
+        comments=df['comments'],
+        water_temp=df['water_temp'],
+        water_added=df['water_added'],
+        water_level=df['water_level'],
+        humidity=df['humidity'],
+        air_temp=df['air_temp']
+    )

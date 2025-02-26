@@ -35,11 +35,12 @@ def submit_data(data):
                 hydro_vega_added=0,
                 hydro_flora_added=0,
                 boost_added=0,
-                # water_temp=float(data[7]),
-                # water_level=float(data[8]),
-                # water_added=0,
-                # air_temp=float(data[9]),
-                # humidity=float(data[10]),
+                rhizotonic_added=0,
+                water_temp=float(data[7]),
+                water_level=float(data[8]),
+                water_added=0,  # Default to 0 in measure-only mode
+                air_temp=float(data[9]),
+                humidity=float(data[10]),  # Changed from air_humidity to match HydroDataEntry
             )
         else:  # full mode
             measurement = HydroDataEntry(
@@ -54,18 +55,17 @@ def submit_data(data):
                 hydro_vega_added=float(data[6]),
                 hydro_flora_added=float(data[7]),
                 boost_added=float(data[8]),
-                light_hours=int(data[9]),
-                light_intensity=int(data[10]),
-                other_actions=str(data[11]),
-                observations=str(data[12]),
-                comments=str(data[13]),
-                water_temp=float(data[14]),
-                water_level=float(data[15]),
-                water_added=float(data[16]),
-                air_temp=float(data[17]),
-                humidity=float(data[18]),
-
-
+                rhizotonic_added=float(data[9]),
+                light_hours=int(data[10]),
+                light_intensity=int(data[11]),
+                other_actions=str(data[12]),
+                observations=str(data[13]),
+                comments=str(data[14]),
+                water_temp=float(data[15]),
+                water_level=float(data[16]),
+                water_added=float(data[17]),
+                air_temp=float(data[18]),
+                humidity=float(data[19]),
             )
 
         # Save to database
@@ -132,7 +132,7 @@ with st.form(key='dataEntryForm'):
     st.divider()
     st.write("Environment")
     air_temp = st.number_input("air temp (degC)", value=0)
-    air_humidity = st.number_input("air humidity (%)", value=0)
+    humidity = st.number_input("air humidity (%)", value=0)  # Changed from air_humidity for consistency
 
     st.divider()
     st.write("Light")
@@ -153,8 +153,7 @@ with st.form(key='dataEntryForm'):
 
     submitted = st.form_submit_button("Enter Data")
     if submitted:
-
         if measure_only_mode:
-            submit_data([ph, ec, light_hours, light_intensity, other_actions, observations, comments, water_temp, water_level, air_temp, air_humidity])
+            submit_data([ph, ec, light_hours, light_intensity, other_actions, observations, comments, water_temp, water_level, air_temp, humidity])
         else:
-            submit_data([ph, ec, ph_final, ec_final, ph_down_added, ph_up_added, hydro_vega_added, hydro_flora_added, boost_added, light_hours, light_intensity, other_actions, observations, comments, water_temp, water_level, water_added, air_temp, air_humidity])
+            submit_data([ph, ec, ph_final, ec_final, ph_down_added, ph_up_added, hydro_vega_added, hydro_flora_added, boost_added, rhizotonic_added, light_hours, light_intensity, other_actions, observations, comments, water_temp, water_level, water_added, air_temp, humidity])
